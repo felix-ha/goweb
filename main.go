@@ -57,6 +57,11 @@ func writeExample(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(str))
 }
 
+func writeHeaderExample(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(501)
+	fmt.Fprintln(w, "Not implemented yet")
+}
+
 func log(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
@@ -78,6 +83,7 @@ func main() {
 	http.HandleFunc("/process", log(process))
 	http.HandleFunc("/process/file", log(process_file))
 	http.HandleFunc("/write", log(writeExample))
+	http.HandleFunc("/write/header", log(writeHeaderExample))
 
 	server.ListenAndServe()
 }
