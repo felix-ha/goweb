@@ -1,12 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"runtime"
 )
+
+type Data struct {
+	Info    string
+	Results []float32
+}
 
 func root(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "root url")
@@ -68,6 +74,41 @@ func headerExample(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(302)
 }
 
+func jsonExample(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	post := &Data{
+		Info:    "done",
+		Results: []float32{0.33, 0.33, 0.33},
+	}
+	json, _ := json.Marshal(post)
+	w.Write(json)
+}
+
+func setCookie(w http.ResponseWriter, r *http.Request) {
+	c1 := http.Cookie{
+		Name:     "first_cookie",
+		Value:    "jkloe",
+		HttpOnly: true,
+	}
+	c2 := http.Cookie{
+		Name:     "second_cookie",
+		Value:    "asdf",
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &c1)
+	http.SetCookie(w, &c2)
+}
+
+func getCookie(w http.ResponseWriter, r *http.Request) {
+	c1, err := r.Cookie("first_cookie")
+	if err != nil {
+		fmt.Fprintln(w, "Cannot get the first cookie")
+	}
+	cs := r.Cookies()
+	fmt.Fprintln(w, c1)
+	fmt.Fprintln(w, cs)
+}
+
 func log(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
@@ -90,7 +131,10 @@ func main() {
 	http.HandleFunc("/process/file", log(process_file))
 	http.HandleFunc("/write", log(writeExample))
 	http.HandleFunc("/write/header", log(writeHeaderExample))
-	http.HandleFunc("/redirect", headerExample)
+	http.HandleFunc("/redirect", log(headerExample))
+	http.HandleFunc("/json", log(jsonExample))
+	http.HandleFunc("/set_cookie", log(setCookie))
+	http.HandleFunc("/get_cookie", log(getCookie))
 
 	server.ListenAndServe()
 }
