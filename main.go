@@ -122,7 +122,7 @@ func main() {
 		Addr: "127.0.0.1:8080",
 	}
 
-	http.HandleFunc("/", log(root))
+	http.HandleFunc("/", root)
 	http.HandleFunc("/hello", log(hello))
 	http.HandleFunc("/world", log(world))
 	http.HandleFunc("/headers", log(headers))
