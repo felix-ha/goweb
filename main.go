@@ -35,7 +35,7 @@ func body(w http.ResponseWriter, r *http.Request) {
 
 func process(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	fmt.Fprintln(w, r.Form)
+	fmt.Fprintln(w, r.PostForm)
 }
 
 func log(h http.HandlerFunc) http.HandlerFunc {
