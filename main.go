@@ -40,9 +40,7 @@ func process(w http.ResponseWriter, r *http.Request) {
 }
 
 func process_file(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(1024)
-	fileHeader := r.MultipartForm.File["uploaded"][0]
-	file, err := fileHeader.Open()
+	file, _, err := r.FormFile("uploaded")
 	if err == nil {
 		data, err := ioutil.ReadAll(file)
 		if err == nil {
@@ -69,8 +67,8 @@ func main() {
 	http.HandleFunc("/world", log(world))
 	http.HandleFunc("/headers", log(headers))
 	http.HandleFunc("/body", log(body))
-	http.HandleFunc("/process", process)
-	http.HandleFunc("/process/file", process_file)
+	http.HandleFunc("/process", log(process))
+	http.HandleFunc("/process/file", log(process_file))
 
 	server.ListenAndServe()
 }
