@@ -33,6 +33,11 @@ func body(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, string(body))
 }
 
+func process(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Fprintln(w, r.Form)
+}
+
 func log(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
@@ -51,6 +56,7 @@ func main() {
 	http.HandleFunc("/world", log(world))
 	http.HandleFunc("/headers", log(headers))
 	http.HandleFunc("/body", log(body))
+	http.HandleFunc("/process", process)
 
 	server.ListenAndServe()
 }
