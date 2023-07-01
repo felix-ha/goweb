@@ -26,6 +26,13 @@ func headers(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, agent)
 }
 
+func body(w http.ResponseWriter, r *http.Request) {
+	len := r.ContentLength
+	body := make([]byte, len)
+	r.Body.Read(body)
+	fmt.Fprintln(w, string(body))
+}
+
 func log(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
@@ -43,6 +50,7 @@ func main() {
 	http.HandleFunc("/hello", log(hello))
 	http.HandleFunc("/world", log(world))
 	http.HandleFunc("/headers", log(headers))
+	http.HandleFunc("/body", log(body))
 
 	server.ListenAndServe()
 }
