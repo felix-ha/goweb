@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"runtime"
@@ -38,6 +39,18 @@ func process(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, r.PostForm)
 }
 
+func process_file(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(1024)
+	fileHeader := r.MultipartForm.File["uploaded"][0]
+	file, err := fileHeader.Open()
+	if err == nil {
+		data, err := ioutil.ReadAll(file)
+		if err == nil {
+			fmt.Fprintln(w, string(data))
+		}
+	}
+}
+
 func log(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
@@ -57,6 +70,7 @@ func main() {
 	http.HandleFunc("/headers", log(headers))
 	http.HandleFunc("/body", log(body))
 	http.HandleFunc("/process", process)
+	http.HandleFunc("/process/file", process_file)
 
 	server.ListenAndServe()
 }
