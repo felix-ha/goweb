@@ -118,8 +118,10 @@ func log(h http.HandlerFunc) http.HandlerFunc {
 }
 
 func main() {
+	fmt.Println("starting program...")
+
 	server := http.Server{
-		Addr: "127.0.0.1:8080",
+		Addr: "0.0.0.0:8080",
 	}
 
 	http.HandleFunc("/", root)
