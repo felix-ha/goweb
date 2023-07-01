@@ -49,6 +49,14 @@ func process_file(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func writeExample(w http.ResponseWriter, r *http.Request) {
+	str := `<html>
+	<head><title>Go Web Programming</title></head>
+	<body><h1>Hello World</h1></body>
+	</html>`
+	w.Write([]byte(str))
+}
+
 func log(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
@@ -69,6 +77,7 @@ func main() {
 	http.HandleFunc("/body", log(body))
 	http.HandleFunc("/process", log(process))
 	http.HandleFunc("/process/file", log(process_file))
+	http.HandleFunc("/write", log(writeExample))
 
 	server.ListenAndServe()
 }
