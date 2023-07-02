@@ -3,8 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"reflect"
 	"runtime"
 )
@@ -12,6 +15,10 @@ import (
 type Data struct {
 	Info    string
 	Results []float32
+}
+
+type RequestFileDownload struct {
+	FileName string `json:"filename"`
 }
 
 func root(w http.ResponseWriter, r *http.Request) {
@@ -109,6 +116,42 @@ func getCookie(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, cs)
 }
 
+func download(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+		return
+	}
+
+	var data RequestFileDownload
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		http.Error(w, "Failed to parse JSON data", http.StatusBadRequest)
+		return
+	}
+
+	fileName := data.FileName
+	filePath := filepath.Join("resources", fileName)
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to open file: %s", err), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
+	w.Header().Set("Content-Type", "application/octet-stream")
+
+	_, err = io.Copy(w, file)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to send file: %s", err), http.StatusInternalServerError)
+		return
+	}
+}
+
 func log(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
@@ -137,6 +180,7 @@ func main() {
 	http.HandleFunc("/json", log(jsonExample))
 	http.HandleFunc("/set_cookie", log(setCookie))
 	http.HandleFunc("/get_cookie", log(getCookie))
+	http.HandleFunc("/download", log(download))
 
 	server.ListenAndServe()
 }

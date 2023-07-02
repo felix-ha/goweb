@@ -10,5 +10,7 @@ docker_run:
 docker_request:
 	curl -i http://0.0.0.0:80/json
 
+.PHONY: download_request
+download_request:
+	curl -H "Content-Type: application/json" -d '{"filename": "file.txt"}' -i http://0.0.0.0:80/download
 
-	
