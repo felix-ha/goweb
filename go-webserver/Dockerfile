@@ -1,13 +1,10 @@
-FROM golang:1.19 as build
+FROM golang:1.19
 
-WORKDIR /go/src/app
-COPY . .
+ADD . /go/src/go-webserver
+WORKDIR /go/src/go-webserver
 
-RUN go mod download
-RUN CGO_ENABLED=0 go build -o /go/bin/app
+RUN go install go-webserver
 
-FROM gcr.io/distroless/static-debian11
-COPY --from=build /go/bin/app /
-CMD ["/app"]
+ENTRYPOINT /go/bin/go-webserver
 
 EXPOSE 8080
